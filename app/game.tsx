@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import makeQr from "qrcode-generator";
-import { CAPACITY, QUESTION_LIMIT, TOPPINGS, localTime, participantUrl, type BoardState, type MyPiece, type Piece, type Question, type Topping } from "../lib/event";
+import { CAPACITY, QUESTION_LIMIT, TOPPINGS, localTime, participantUrl as sitesParticipantUrl, type BoardState, type MyPiece, type Piece, type Question, type Topping } from "../lib/event";
 
 const EMPTY: BoardState = { pieces: [], count: 0, capacity: CAPACITY, open: true, round: 0 };
 const DEVICE_KEY = "pizza-chat-vol01-device";
@@ -154,13 +154,13 @@ function Slice({ topping }: { topping: Topping }) {
   </svg>;
 }
 
-function QrCode() {
+function QrCode({ url }: { url: string }) {
   const svg = useMemo(() => {
     const code = makeQr(0, "M");
-    code.addData(participantUrl);
+    code.addData(url);
     code.make();
     return code.createSvgTag({ cellSize: 5, margin: 20, scalable: true });
-  }, []);
+  }, [url]);
   return <div className="qr-code" role="img" aria-label="扫描二维码进入匿名提问页面" dangerouslySetInnerHTML={{ __html: svg }}/>;
 }
 
@@ -292,9 +292,15 @@ export function Participant() {
   </div>;
 }
 
-export function Board() {
+export function Board({ standalone }: { standalone: boolean }) {
   const { board, ready, offline } = useBoard();
   const [copied, setCopied] = useState(false);
+  const [participantUrl, setParticipantUrl] = useState(standalone ? "" : sitesParticipantUrl);
+
+  useEffect(() => {
+    if (standalone) setParticipantUrl(new URL("/", window.location.origin).href);
+  }, [standalone]);
+
   async function copyLink() {
     try { await navigator.clipboard.writeText(participantUrl); setCopied(true); }
     catch { setCopied(false); }
@@ -307,9 +313,9 @@ export function Board() {
         <GameTitle/>
         <p className="hero-copy">今晚没聊完的，<br/>带到知乎接着聊。</p>
         <div className="qr-ticket">
-          <a href={participantUrl} target="_blank" rel="noreferrer"><QrCode/></a>
+          {participantUrl && <a href={participantUrl} target="_blank" rel="noreferrer"><QrCode url={participantUrl}/></a>}
           <div><h2>扫码留一问</h2><p>每人的第一问<br/>会拼上一块随机披萨。</p>
-          <button className="text-button" type="button" onClick={copyLink}>{copied ? "链接已复制" : "复制投稿链接"} <span aria-hidden="true">↗</span></button></div>
+          <button className="text-button" type="button" disabled={!participantUrl} onClick={copyLink}>{copied ? "链接已复制" : "复制投稿链接"} <span aria-hidden="true">↗</span></button></div>
         </div>
       </section>
       <section className="board-pizza" aria-label="现场拼图进度">

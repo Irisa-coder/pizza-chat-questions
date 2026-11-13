@@ -1,4 +1,19 @@
-# vinext-starter
+# Pizza Chat · 把问题「打包」带走
+
+匿名投稿、10 块随机披萨的同步投屏，以及可按轮次重置和导出 Excel 的主持人后台。
+
+## 独立部署
+
+从这个仓库部署到 Cloudflare Workers，Worker 同时运行页面和接口，D1 保存投稿。新部署使用独立的数据库。
+
+1. 使用 Node.js 22.13 或更新版本，在仓库根目录执行 `npm ci` 和 `npx wrangler login`。
+2. 在 Cloudflare 创建名为 `pizza-chat-questions` 的 D1 数据库（`npx wrangler d1 create pizza-chat-questions`），把数据库 ID 填到 `cloudflare/wrangler.jsonc` 的 `d1_databases[0].database_id`。
+3. 执行 `npm run build:cloudflare` 和 `npm run deploy:cloudflare`。部署命令先执行数据库迁移，再发布 Worker。
+4. 执行 `npx wrangler secret put PIZZA_HOST_PASSWORD --config cloudflare/wrangler.jsonc`，按提示设置主持人专用的强密码。浏览器访问 `/host` 时，用户名填 `host`，密码填这一步的值。
+
+根路径是投稿入口，`/board` 是投屏页并生成当前网址的二维码。工作人员可在 `/host` 查看题目、重置和导出。也可以在 Cloudflare Workers 控制台关联该 GitHub 仓库，构建命令填 `npm run build:cloudflare`，部署命令填 `npm run deploy:cloudflare`。
+
+## 原有 ChatGPT Sites 开发环境
 
 A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
 

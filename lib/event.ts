@@ -1,7 +1,7 @@
 export const CAPACITY = 10;
 export const GAME_TITLE = "把问题「打包」带走";
 export const QUESTION_LIMIT = 320;
-export const EVENT_ORIGIN = "https://pizza-chat-vol01-questions.irisat.chatgpt.site";
+export const participantUrl = "https://pizza-chat-vol01-questions.irisat.chatgpt.site/";
 
 export const TOPPINGS = {
   pepperoni: { name: "辣香肠", color: "#F76E63", base: "#FFE5A1", ink: "#B63B32" },
@@ -18,8 +18,6 @@ export type Piece = { slot: number; topping: Topping };
 export type BoardState = { pieces: Piece[]; count: number; capacity: number; open: boolean; round: number };
 export type MyPiece = Piece & { first: boolean; round: number };
 export type Question = { id: number; round: number; question: string; allowShare: boolean; topping: Topping; createdAt: string };
-
-export const participantUrl = EVENT_ORIGIN + "/";
 
 export function localTime(value: string, includeYear = false) {
   return new Intl.DateTimeFormat("zh-CN", {

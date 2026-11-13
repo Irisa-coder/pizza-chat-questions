@@ -1,0 +1,19 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "pizza-chat-questions",
+  "main": "../worker/index.ts",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "PIZZA_STANDALONE": "1"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pizza-chat-questions",
+      "migrations_dir": "../drizzle"
+    }
+  ]
+}

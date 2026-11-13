@@ -48,8 +48,10 @@ function isRound(value: unknown): value is number {
 async function route(request: Request) {
   const url = new URL(request.url);
   const path = url.pathname;
-  if (path.startsWith("/api/host/") && !isHost(request, env.PIZZA_HOST_EMAIL)) {
-    return json({ error: "请用活动主理人的 ChatGPT 账号登录。" }, 403);
+  if (path.startsWith("/api/host/") && !isHost(request, env)) {
+    return json({
+      error: env.PIZZA_STANDALONE === "1" ? "请先登录主持人后台。" : "请用活动主理人的 ChatGPT 账号登录。",
+    }, 403);
   }
   if (request.method === "POST" && !verifyOrigin(request)) return json({ error: "请在活动页面操作。" }, 403);
   const db = env.DB;

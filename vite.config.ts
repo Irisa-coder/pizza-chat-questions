@@ -37,28 +37,15 @@ const localBindingConfig = {
     : [],
 };
 
-export default defineConfig(async ({ command }) => {
+export default defineConfig(async ({ command, mode }) => {
   configureToolEnvironment(process.cwd());
+  const standalone = mode === "cloudflare";
 
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
-
-  return {
-    server: {
-      ...(managedLinux
-        ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
-        : {}),
-      ...(isCodexSeatbeltSandbox
-        ? { watch: { useFsEvents: false, usePolling: true } }
-        : {}),
-    },
-    plugins: [
-      vinext(),
-      sites({ mockAuth: !managedLinux }),
-      connectorPreview(),
-      cloudflare({
-        viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
-        inspectorPort: false,
+  const workerConfig = standalone
+    ? { configPath: "./cloudflare/wrangler.jsonc" }
+    : {
         config: {
           ...localBindingConfig,
           ...(command === "serve"
@@ -73,7 +60,25 @@ export default defineConfig(async ({ command }) => {
               }
             : {}),
         },
-        ...(command === "serve"
+      };
+
+  return {
+    server: {
+      ...(managedLinux
+        ? { host: "0.0.0.0", allowedHosts: ["terminal.local"] }
+        : {}),
+      ...(isCodexSeatbeltSandbox
+        ? { watch: { useFsEvents: false, usePolling: true } }
+        : {}),
+    },
+    plugins: [
+      vinext(),
+      ...(!standalone ? [sites({ mockAuth: !managedLinux }), connectorPreview()] : []),
+      cloudflare({
+        viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
+        inspectorPort: false,
+        ...workerConfig,
+        ...(!standalone && command === "serve"
           ? {
               auxiliaryWorkers: [
                 {
